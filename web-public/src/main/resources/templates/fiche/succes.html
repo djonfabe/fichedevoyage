@@ -113,18 +113,10 @@
         var key = 'pdf_dl_' + ref;
         if (token && !sessionStorage.getItem(key)) {
             sessionStorage.setItem(key, '1');
-            fetch('/api/v1/fiches/' + token + '/pdf')
-                .then(function(r) { return r.blob(); })
-                .then(function(blob) {
-                    var url = URL.createObjectURL(blob);
-                    var a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'fiche-' + ref + '.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-                });
+            var iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = '/api/v1/fiches/' + token + '/pdf';
+            document.body.appendChild(iframe);
         }
     });
 </script>
