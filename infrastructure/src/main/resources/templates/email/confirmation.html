@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header { background: #002664; color: white; padding: 24px 32px; }
+        .header h1 { margin: 0; font-size: 22px; }
+        .header p { margin: 4px 0 0; font-size: 13px; color: #93b8e0; }
+        .badge { display: inline-block; background: #FECB00; color: #002664; font-weight: bold; font-size: 20px; padding: 8px 20px; border-radius: 8px; letter-spacing: 2px; margin: 16px 0; }
+        .body { padding: 28px 32px; color: #333; font-size: 15px; line-height: 1.6; }
+        .info-grid { background: #f9f9f9; border-radius: 8px; padding: 16px; margin: 20px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #888; }
+        .info-value { font-weight: bold; color: #333; }
+        .btn { display: inline-block; background: #002664; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0; }
+        .footer { background: #f0f0f0; padding: 16px 32px; font-size: 12px; color: #888; text-align: center; }
+        .alert { background: #fef9e7; border-left: 4px solid #FECB00; padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 14px; color: #555; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Fiche de Voyage enregistrée</h1>
+        <p>République du Tchad — Police des Frontières</p>
+    </div>
+    <div class="body">
+        <p>Bonjour <strong th:text="${fiche.prenoms + ' ' + fiche.nom}">Prénom NOM</strong>,</p>
+        <p>Votre fiche de renseignement de police aux frontières a été enregistrée avec succès.</p>
+
+        <div style="text-align:center;">
+            <span class="badge" th:text="${fiche.reference}">FV-2026-000001</span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Nom complet</span>
+                <span class="info-value" th:text="${fiche.nom + ' ' + fiche.prenoms}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Document</span>
+                <span class="info-value" th:text="${fiche.typeDocument + ' — ' + fiche.numeroDocument}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date du voyage</span>
+                <span class="info-value" th:text="${#temporals.format(fiche.dateVoyage, 'dd/MM/yyyy')}"></span>
+            </div>
+            <div class="info-row" th:if="${fiche.compagnieNom != null}">
+                <span class="info-label">Vol</span>
+                <span class="info-value" th:text="${fiche.compagnieNom + (fiche.numeroVol != null ? ' ' + fiche.numeroVol : '')}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Statut</span>
+                <span class="info-value" th:text="${fiche.statut}"></span>
+            </div>
+        </div>
+
+        <div class="alert">
+            Conservez ce numéro de référence. Il vous sera demandé à votre passage à la frontière.
+            Vous pouvez également télécharger votre fiche en PDF en cliquant ci-dessous.
+        </div>
+
+        <p>
+            <a th:href="${'http://localhost:8080/fiche/succes/' + fiche.qrCodeToken}" class="btn">
+                Voir ma fiche &amp; télécharger le PDF
+            </a>
+        </p>
+
+        <p style="font-size:13px;color:#888;">
+            Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
+        </p>
+    </div>
+    <div class="footer">
+        Direction Générale de la Police Nationale — Direction de la Police des Frontières<br/>
+        Tchad &mdash; &copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span>
+    </div>
+</div>
+</body>
+</html>

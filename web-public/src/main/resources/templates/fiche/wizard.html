@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head th:replace="~{fragments/layout :: head('Remplir ma fiche')}"></head>
+<body class="bg-gray-50 font-sans">
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<main class="max-w-4xl mx-auto px-4 py-10"
+      x-data="ficheWizard()"
+      x-init="restoreFromStorage()">
+
+    <h1 class="text-3xl font-bold text-bleu mb-2" th:text="#{wizard.titre}">Fiche de Renseignement</h1>
+    <p class="text-gray-500 mb-8 text-sm" th:text="#{wizard.soustitre}">
+        Remplissez le formulaire en 5 étapes. Les champs marqués <span class="text-red-500">*</span> sont obligatoires.
+    </p>
+
+    <!-- Barre de progression -->
+    <div class="flex items-center mb-10 overflow-x-auto pb-2">
+        <template x-for="(label, i) in steps" :key="i">
+            <div class="flex items-center shrink-0">
+                <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+                         :class="currentStep === i+1 ? 'bg-bleu text-white shadow-lg scale-110' :
+                                 currentStep > i+1   ? 'bg-or text-bleu-dark' : 'bg-gray-200 text-gray-500'">
+                        <span x-show="currentStep <= i+1" x-text="i+1"></span>
+                        <svg x-show="currentStep > i+1" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs mt-1 font-medium"
+                          :class="currentStep === i+1 ? 'text-bleu' : 'text-gray-400'"
+                          x-text="label"></span>
+                </div>
+                <div x-show="i < steps.length - 1"
+                     class="h-0.5 w-12 md:w-20 mx-1 transition-all"
+                     :class="currentStep > i+1 ? 'bg-or' : 'bg-gray-200'"></div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Formulaire -->
+    <form th:action="${modificationToken != null ? '/P0013/modifier/' + modificationToken : '/P0013'}"
+          th:method="post" th:object="${ficheRequest}" id="ficheForm"
+          @submit.prevent="handleSubmit">
+
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <!-- Honeypot anti-bot -->
+        <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off"/>
+
+        <!-- ──── ÉTAPE 1 : IDENTITÉ ──────────────────────────────────── -->
+        <div x-show="currentStep === 1" x-cloak class="bg-white rounded-2xl shadow-md p-8 space-y-5">
+            <h2 class="text-xl font-bold text-bleu border-b pb-3" th:text="#{wizard.etape1}">Étape 1 — Identité</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.nom}">Nom</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" th:field="*{nom}" x-model="form.nom"
+                           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"
+                           :class="errors.nom ? 'border-red-400' : 'border-gray-300'"
+                           placeholder="NOM DE FAMILLE" @input="clearError('nom')"/>
+                    <p class="text-red-500 text-xs mt-1" x-show="errors.nom" x-text="errors.nom"></p>
+                    <span th:if="${#fields.hasErrors('nom')}" class="text-red-500 text-xs" th:errors="*{nom}"></span>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.prenoms}">Prénoms</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" th:field="*{prenoms}" x-model="form.prenoms"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                    <span th:if="${#fields.hasErrors('prenoms')}" class="text-red-500 text-xs" th:errors="*{prenoms}"></span>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.nomJeuneFille}">Nom de jeune fille</label>
+                    <input type="text" th:field="*{nomJeuneFille}" x-model="form.nomJeuneFille"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.sexe}">Sexe</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <select th:field="*{sexe}" x-model="form.sexe"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                        <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                        <option value="MASCULIN" th:text="#{sexe.masculin}">Masculin</option>
+                        <option value="FEMININ" th:text="#{sexe.feminin}">Féminin</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.dateNaissance}">Date de naissance</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" th:field="*{dateNaissance}" x-model="form.dateNaissance"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.lieuNaissance}">Lieu de naissance</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" th:field="*{lieuNaissance}" x-model="form.lieuNaissance"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.nationalite}">Nationalité</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <select th:field="*{nationaliteId}" x-model="form.nationaliteId"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                        <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                        <option th:each="p : ${pays}" th:value="${p.id}" th:text="${p.nomFr}"></option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.paysResidence}">Pays de résidence</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <select th:field="*{paysResidenceId}" x-model="form.paysResidenceId"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                        <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                        <option th:each="p : ${pays}" th:value="${p.id}" th:text="${p.nomFr}"></option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.profession}">Profession</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" th:field="*{profession}" x-model="form.profession"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.fonction}">Fonction</label>
+                    <input type="text" th:field="*{fonction}" x-model="form.fonction"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.email}">Email</label>
+                    <input type="email" th:field="*{email}" x-model="form.email"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"
+                           placeholder="voyageur@exemple.com"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- ──── ÉTAPE 2 : DOCUMENT ───────────────────────────────────── -->
+        <div x-show="currentStep === 2" x-cloak class="bg-white rounded-2xl shadow-md p-8 space-y-5">
+            <h2 class="text-xl font-bold text-bleu border-b pb-3" th:text="#{wizard.etape2}">Étape 2 — Document de voyage</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.typeDocument}">Type de document</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <select th:field="*{typeDocument}" x-model="form.typeDocument"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                        <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                        <option value="PASSPORT" th:text="#{doc.passport}">Passeport</option>
+                        <option value="CNI" th:text="#{doc.cni}">CNI</option>
+                        <option value="LAISSEZ_PASSER" th:text="#{doc.laissezPasser}">Laissez-passer</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.numeroDocument}">Numéro du document</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" th:field="*{numeroDocument}" x-model="form.numeroDocument"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"
+                           placeholder="Ex: BF1234567"/>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.dateDelivrance}">Date de délivrance</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" th:field="*{dateDelivrance}" x-model="form.dateDelivrance"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.lieuDelivrance}">Lieu de délivrance</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" th:field="*{lieuDelivrance}" x-model="form.lieuDelivrance"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- ──── ÉTAPE 3 : VOYAGE ─────────────────────────────────────── -->
+        <div x-show="currentStep === 3" x-cloak class="bg-white rounded-2xl shadow-md p-8 space-y-6">
+            <h2 class="text-xl font-bold text-bleu border-b pb-3" th:text="#{wizard.etape3}">Étape 3 — Voyage</h2>
+
+            <!-- Provenance -->
+            <div>
+                <h3 class="font-semibold text-gray-700 mb-3" th:text="#{wizard.provenance}">Provenance</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.paysProvenance}">Pays de provenance</label>
+                        <select th:field="*{paysProvenanceId}" x-model="form.paysProvenanceId"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                            <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                            <option th:each="p : ${pays}" th:value="${p.id}" th:text="${p.nomFr}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.villeProvenance}">Ville de provenance</label>
+                        <input type="text" th:field="*{villeProvenance}" x-model="form.villeProvenance"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.adresseProvenance}">Adresse de résidence</label>
+                        <input type="text" th:field="*{adresseProvenance}" x-model="form.adresseProvenance"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.contactProvenance}">Contact (+indicatif)</label>
+                        <input type="tel" th:field="*{contactProvenance}" x-model="form.contactProvenance"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"
+                               placeholder="+23566000000"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Destination -->
+            <div>
+                <h3 class="font-semibold text-gray-700 mb-3" th:text="#{wizard.destination}">Destination</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.paysDestination}">Pays de destination</label>
+                        <select th:field="*{paysDestinationId}" x-model="form.paysDestinationId"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                            <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                            <option th:each="p : ${pays}" th:value="${p.id}" th:text="${p.nomFr}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.villeDestination}">Ville de destination</label>
+                        <input type="text" th:field="*{villeDestination}" x-model="form.villeDestination"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.adresseDestination}">Adresse à destination</label>
+                        <input type="text" th:field="*{adresseDestination}" x-model="form.adresseDestination"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.contactDestination}">Contact à destination</label>
+                        <input type="tel" th:field="*{contactDestination}" x-model="form.contactDestination"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"
+                               placeholder="+23566000000"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Séjour & Vol -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        <th:block th:text="#{field.dateVoyage}">Date du voyage</th:block> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" th:field="*{dateVoyage}" x-model="form.dateVoyage"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.typeVoyage}">Type de voyage</label>
+                    <select th:field="*{typeVoyage}" x-model="form.typeVoyage"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                        <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                        <option value="ENTREE" th:text="#{voyage.entree}">Entrée</option>
+                        <option value="SORTIE" th:text="#{voyage.sortie}">Sortie</option>
+                        <option value="TRANSIT" th:text="#{voyage.transit}">Transit</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.motif}">Motif du voyage</label>
+                    <select th:field="*{motifVoyage}" x-model="form.motifVoyage"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                        <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                        <option value="AFFAIRES">Affaires</option>
+                        <option value="VACANCES">Vacances / Tourisme</option>
+                        <option value="FAMILLE">Famille</option>
+                        <option value="ETUDES">Études</option>
+                        <option value="SANTE">Santé</option>
+                        <option value="CONFERENCE">Conférence</option>
+                        <option value="RELIGION">Religion</option>
+                        <option value="TRANSIT">Transit</option>
+                        <option value="AUTRE">Autre</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.dureeSejour}">Durée du séjour (jours)</label>
+                    <input type="number" th:field="*{dureeSejour}" x-model="form.dureeSejour"
+                           min="0" max="365"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.typeHebergement}">Type d'hébergement</label>
+                    <select th:field="*{typeHebergement}" x-model="form.typeHebergement"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                        <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                        <option value="HOTEL">Hôtel</option>
+                        <option value="FAMILLE">Famille</option>
+                        <option value="AMIS">Amis</option>
+                        <option value="RESIDENCE_PRIVEE">Résidence privée</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.compagnie}">Compagnie aérienne</label>
+                    <select th:field="*{compagnieId}" x-model="form.compagnieId"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none">
+                        <option value="" th:text="#{select.choisir}">-- Choisir --</option>
+                        <option th:each="c : ${compagnies}" th:value="${c.id}" th:text="${c.nom}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1" th:text="#{field.numeroVol}">Numéro de vol</label>
+                    <input type="text" th:field="*{numeroVol}" x-model="form.numeroVol"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"
+                           placeholder="Ex: TK 562"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- ──── ÉTAPE 4 : ENGAGEMENT ─────────────────────────────────── -->
+        <div x-show="currentStep === 4" x-cloak class="bg-white rounded-2xl shadow-md p-8 space-y-6">
+            <h2 class="text-xl font-bold text-bleu border-b pb-3" th:text="#{wizard.etape4}">Étape 4 — Récapitulatif et Engagement</h2>
+            <!-- Récapitulatif -->
+            <div class="bg-gray-50 rounded-xl p-5 text-sm space-y-3">
+                <div class="grid grid-cols-2 gap-x-6 gap-y-2">
+                    <div><span class="font-semibold text-gray-600">Nom :</span> <span x-text="form.nom" class="text-gray-800"></span></div>
+                    <div><span class="font-semibold text-gray-600">Prénoms :</span> <span x-text="form.prenoms" class="text-gray-800"></span></div>
+                    <div><span class="font-semibold text-gray-600">Date de naissance :</span> <span x-text="form.dateNaissance" class="text-gray-800"></span></div>
+                    <div><span class="font-semibold text-gray-600">Document :</span> <span x-text="form.typeDocument + ' — ' + form.numeroDocument" class="text-gray-800"></span></div>
+                    <div><span class="font-semibold text-gray-600">Date de voyage :</span> <span x-text="form.dateVoyage" class="text-gray-800"></span></div>
+                    <div><span class="font-semibold text-gray-600">Motif :</span> <span x-text="form.motifVoyage" class="text-gray-800"></span></div>
+                </div>
+                <button type="button" @click="currentStep = 1"
+                        class="text-bleu text-xs underline hover:text-bleu-light">
+                    ✏️ Modifier mes informations
+                </button>
+            </div>
+
+            <!-- Attestation -->
+            <div class="border-2 border-or rounded-xl p-5 bg-amber-50">
+                <p class="text-sm text-gray-700 mb-4" th:text="#{wizard.engagement.texte}">
+                    Je soussigné(e) certifie sur l'honneur l'exactitude des renseignements fournis dans cette fiche.
+                    Je reconnais avoir pris connaissance des dispositions de la Loi n° 007-2015/AN du 21 avril 2015
+                    et des sanctions prévues en cas de fausse déclaration.
+                </p>
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" th:field="*{engagementAccepte}" x-model="form.engagementAccepte"
+                           class="mt-1 w-5 h-5 accent-bleu" required/>
+                    <span class="text-sm font-semibold text-gray-800" th:text="#{wizard.engagement.label}">
+                        J'atteste sur l'honneur l'exactitude des informations fournies. <span class="text-red-500">*</span>
+                    </span>
+                </label>
+                <span th:if="${#fields.hasErrors('engagementAccepte')}" class="text-red-500 text-xs block mt-2" th:errors="*{engagementAccepte}"></span>
+            </div>
+        </div>
+
+        <!-- ──── ÉTAPE 5 : VALIDATION ─────────────────────────────────── -->
+        <div x-show="currentStep === 5" x-cloak class="bg-white rounded-2xl shadow-md p-8 text-center space-y-5">
+            <div class="text-6xl mb-2">⏳</div>
+            <h2 class="text-xl font-bold text-bleu" th:text="#{wizard.envoi.titre}">Envoi en cours…</h2>
+            <p class="text-gray-500" th:text="#{wizard.envoi.texte}">Votre demande est en cours d'enregistrement, veuillez patienter.</p>
+            <div class="flex justify-center">
+                <div class="w-12 h-12 border-4 border-bleu border-t-or rounded-full animate-spin"></div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-between mt-6">
+            <button type="button" @click="prevStep()"
+                    x-show="currentStep > 1 && currentStep < 5"
+                    class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 font-semibold transition-all"
+                    th:text="#{wizard.btn.precedent}">
+                ← Précédent
+            </button>
+            <div x-show="currentStep === 1 || currentStep > 1"></div>
+
+            <button type="button" @click="nextStep()"
+                    x-show="currentStep < 4"
+                    class="ml-auto px-8 py-3 bg-bleu text-white rounded-xl hover:bg-bleu-light font-semibold transition-all"
+                    th:text="#{wizard.btn.suivant}">
+                Suivant →
+            </button>
+
+            <div x-show="currentStep === 4" class="ml-auto flex flex-wrap gap-3">
+                <button type="button" @click="downloadForm()"
+                        :disabled="!form.engagementAccepte"
+                        class="flex items-center gap-2 px-6 py-3 bg-bleu text-white rounded-xl hover:bg-bleu-light font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Télécharger le document
+                </button>
+                <button type="button" @click="submitForm()"
+                        :disabled="!form.engagementAccepte"
+                        class="flex items-center gap-2 px-6 py-3 bg-or text-bleu-dark rounded-xl hover:bg-or-light font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        th:text="#{wizard.btn.valider}">
+                    ✅ Valider et soumettre
+                </button>
+            </div>
+        </div>
+    </form>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script th:inline="javascript">
+function ficheWizard() {
+    return {
+        currentStep: 1,
+        steps: ['Identité', 'Document', 'Voyage', 'Engagement', 'Envoi'],
+        errors: {},
+        form: {
+            nom: '', prenoms: '', nomJeuneFille: '', sexe: '',
+            dateNaissance: '', lieuNaissance: '', email: '',
+            profession: '', fonction: '', nationaliteId: '', paysResidenceId: '',
+            typeDocument: '', numeroDocument: '', dateDelivrance: '', lieuDelivrance: '',
+            paysProvenanceId: '', villeProvenance: '', adresseProvenance: '', contactProvenance: '',
+            paysDestinationId: '', villeDestination: '', adresseDestination: '', contactDestination: '',
+            dateVoyage: '', typeVoyage: '', motifVoyage: '', dureeSejour: '',
+            typeHebergement: '', compagnieId: '', numeroVol: '',
+            engagementAccepte: false
+        },
+
+        restoreFromStorage() {
+            const saved = localStorage.getItem('ficheWizardDraft');
+            if (saved) {
+                try { this.form = { ...this.form, ...JSON.parse(saved) }; } catch(e) {}
+            }
+        },
+
+        saveToStorage() {
+            localStorage.setItem('ficheWizardDraft', JSON.stringify(this.form));
+        },
+
+        clearError(field) {
+            delete this.errors[field];
+            this.saveToStorage();
+        },
+
+        validateStep(step) {
+            this.errors = {};
+            if (step === 1) {
+                if (!this.form.nom?.trim()) this.errors.nom = 'Le nom est obligatoire';
+                if (!this.form.prenoms?.trim()) this.errors.prenoms = 'Les prénoms sont obligatoires';
+                if (!this.form.sexe) this.errors.sexe = 'Le sexe est obligatoire';
+                if (!this.form.dateNaissance) this.errors.dateNaissance = 'La date de naissance est obligatoire';
+                if (!this.form.lieuNaissance?.trim()) this.errors.lieuNaissance = 'Le lieu de naissance est obligatoire';
+                if (!this.form.nationaliteId) this.errors.nationaliteId = 'La nationalité est obligatoire';
+                if (!this.form.paysResidenceId) this.errors.paysResidenceId = 'Le pays de résidence est obligatoire';
+                if (!this.form.profession?.trim()) this.errors.profession = 'La profession est obligatoire';
+            }
+            if (step === 2) {
+                if (!this.form.typeDocument) this.errors.typeDocument = 'Le type de document est obligatoire';
+                if (!this.form.numeroDocument?.trim()) this.errors.numeroDocument = 'Le numéro de document est obligatoire';
+                if (!this.form.dateDelivrance) this.errors.dateDelivrance = 'La date de délivrance est obligatoire';
+                if (!this.form.lieuDelivrance?.trim()) this.errors.lieuDelivrance = 'Le lieu de délivrance est obligatoire';
+            }
+            if (step === 3) {
+                if (!this.form.dateVoyage) this.errors.dateVoyage = 'La date de voyage est obligatoire';
+            }
+            return Object.keys(this.errors).length === 0;
+        },
+
+        nextStep() {
+            if (this.validateStep(this.currentStep)) {
+                this.saveToStorage();
+                this.currentStep++;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        },
+
+        prevStep() {
+            if (this.currentStep > 1) {
+                this.currentStep--;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        },
+
+        downloadForm() {
+            if (!this.form.engagementAccepte) return;
+            const form = document.getElementById('ficheForm');
+            const dl = document.createElement('input');
+            dl.type = 'hidden'; dl.name = 'download'; dl.value = 'true';
+            form.appendChild(dl);
+            localStorage.removeItem('ficheWizardDraft');
+            this.$nextTick(() => { form.submit(); });
+        },
+
+        submitForm() {
+            if (!this.form.engagementAccepte) return;
+            this.currentStep = 5;
+            localStorage.removeItem('ficheWizardDraft');
+            this.$nextTick(() => {
+                document.getElementById('ficheForm').submit();
+            });
+        },
+
+        handleSubmit(e) {
+            // Handled by submitForm
+        }
+    };
+}
+</script>
+</body>
+</html>
