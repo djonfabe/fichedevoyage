@@ -67,7 +67,7 @@ public class FicheCreationRequest {
     @Size(max = 255)
     private String adresseProvenance;
 
-    @Pattern(regexp = "^\\+[1-9]\\d{6,14}$")
+    @Pattern(regexp = "^(\\+[1-9]\\d{6,14})?$")
     private String contactProvenance;
 
     private Long paysDestinationId;
@@ -78,7 +78,7 @@ public class FicheCreationRequest {
     @Size(max = 255)
     private String adresseDestination;
 
-    @Pattern(regexp = "^\\+[1-9]\\d{6,14}$")
+    @Pattern(regexp = "^(\\+[1-9]\\d{6,14})?$")
     private String contactDestination;
 
     @NotNull

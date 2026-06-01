@@ -2,7 +2,10 @@ package td.gov.fichedevoyage.web.controller;
 
 import td.gov.fichedevoyage.application.dto.*;
 import td.gov.fichedevoyage.application.service.FicheVoyageService;
+import td.gov.fichedevoyage.domain.enums.MotifVoyage;
 import td.gov.fichedevoyage.domain.enums.StatutFiche;
+import td.gov.fichedevoyage.domain.enums.TypeHebergement;
+import td.gov.fichedevoyage.domain.enums.TypeVoyage;
 import td.gov.fichedevoyage.application.service.PdfGenerationService;
 import td.gov.fichedevoyage.application.service.QrCodeService;
 import td.gov.fichedevoyage.domain.port.CompagnieRepository;
@@ -11,12 +14,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.propertyeditors.CustomNumberEditor;
+import java.beans.PropertyEditorSupport;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -31,6 +37,23 @@ public class FicheController {
 
     @Value("${app.base-url}")
     private String baseUrl;
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Long.class, new CustomNumberEditor(Long.class, true));
+        binder.registerCustomEditor(Integer.class, new CustomNumberEditor(Integer.class, true));
+        binder.registerCustomEditor(TypeVoyage.class, nullableEnumEditor(TypeVoyage.class));
+        binder.registerCustomEditor(MotifVoyage.class, nullableEnumEditor(MotifVoyage.class));
+        binder.registerCustomEditor(TypeHebergement.class, nullableEnumEditor(TypeHebergement.class));
+    }
+
+    private <E extends Enum<E>> PropertyEditorSupport nullableEnumEditor(Class<E> type) {
+        return new PropertyEditorSupport() {
+            @Override public void setAsText(String text) {
+                setValue((text == null || text.isBlank()) ? null : Enum.valueOf(type, text));
+            }
+        };
+    }
 
     @GetMapping("/P0013")
     public String formulaire(Model model) {
