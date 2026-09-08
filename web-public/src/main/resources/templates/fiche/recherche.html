@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head th:replace="~{fragments/layout :: head('Modifier ma fiche')}"></head>
+<body class="bg-gray-50 font-sans">
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<main class="max-w-xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold text-bleu mb-2" th:text="#{recherche.titre}">Modifier ma fiche</h1>
+    <p class="text-gray-500 mb-8 text-sm" th:text="#{recherche.soustitre}">
+        Entrez les 3 informations ci-dessous pour retrouver et modifier votre fiche de voyage.
+    </p>
+
+    <!-- Alerte non trouvé -->
+    <div th:if="${notFound}" class="bg-red-50 border border-red-300 text-red-700 rounded-xl px-5 py-4 mb-6 flex gap-3 items-start">
+        <svg class="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z"/>
+        </svg>
+        <div>
+            <p class="font-semibold" th:text="#{recherche.notfound.titre}">Fiche introuvable</p>
+            <p class="text-sm" th:text="#{recherche.notfound.detail}">Aucune fiche ne correspond aux informations saisies. Vérifiez les données et réessayez.</p>
+        </div>
+    </div>
+
+    <form th:action="@{/searchFicheInfo}" th:method="post" th:object="${searchRequest}"
+          class="bg-white rounded-2xl shadow-md p-8 space-y-5">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+                <th:block th:text="#{field.numeroDocument}">Numéro du document de voyage</th:block>
+                <span class="text-red-500">*</span>
+            </label>
+            <input type="text" th:field="*{numeroDocument}"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none"
+                   placeholder="Ex: BF1234567" required/>
+            <span th:if="${#fields.hasErrors('numeroDocument')}" class="text-red-500 text-xs" th:errors="*{numeroDocument}"></span>
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+                <th:block th:text="#{field.dateDelivrance}">Date de délivrance du document</th:block>
+                <span class="text-red-500">*</span>
+            </label>
+            <input type="date" th:field="*{dateDelivrance}"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none" required/>
+            <span th:if="${#fields.hasErrors('dateDelivrance')}" class="text-red-500 text-xs" th:errors="*{dateDelivrance}"></span>
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+                <th:block th:text="#{field.dateVoyage}">Date du voyage</th:block>
+                <span class="text-red-500">*</span>
+            </label>
+            <input type="date" th:field="*{dateVoyage}"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-bleu outline-none" required/>
+            <span th:if="${#fields.hasErrors('dateVoyage')}" class="text-red-500 text-xs" th:errors="*{dateVoyage}"></span>
+        </div>
+
+        <button type="submit"
+                class="w-full bg-bleu text-white py-3 rounded-xl font-bold hover:bg-bleu-light transition-all shadow"
+                th:text="#{recherche.btn}">
+            Rechercher ma fiche
+        </button>
+    </form>
+
+    <div class="mt-6 text-center">
+        <a th:href="@{/P0013}" class="text-bleu text-sm hover:underline" th:text="#{recherche.nouvelle}">
+            Créer une nouvelle fiche →
+        </a>
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header { background: #002664; color: white; padding: 24px 32px; }
+        .header h1 { margin: 0; font-size: 22px; }
+        .header p { margin: 4px 0 0; font-size: 13px; color: #93b8e0; }
+        .body { padding: 28px 32px; color: #333; font-size: 15px; line-height: 1.6; }
+        .attachment-box { display: flex; align-items: center; gap: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 20px 0; }
+        .attachment-icon { font-size: 36px; }
+        .attachment-info { font-size: 14px; }
+        .attachment-info strong { display: block; color: #002664; margin-bottom: 2px; }
+        .badge { display: inline-block; background: #FECB00; color: #002664; font-weight: bold; font-size: 18px; padding: 6px 16px; border-radius: 8px; letter-spacing: 1px; }
+        .footer { background: #f0f0f0; padding: 16px 32px; font-size: 12px; color: #888; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Votre fiche de voyage en PDF</h1>
+        <p>République du Tchad — Police des Frontières</p>
+    </div>
+    <div class="body">
+        <p>Bonjour <strong th:text="${fiche.prenoms + ' ' + fiche.nom}">Prénom NOM</strong>,</p>
+        <p>Vous trouverez ci-joint votre fiche de voyage au format PDF.</p>
+        <p>Référence : <span class="badge" th:text="${fiche.reference}">FV-2026-000001</span></p>
+
+        <div class="attachment-box">
+            <div class="attachment-icon">📄</div>
+            <div class="attachment-info">
+                <strong th:text="'fiche-voyage-' + ${fiche.reference} + '.pdf'">fiche-voyage-FV-2026-000001.pdf</strong>
+                Fiche de renseignement de police aux frontières — imprimez-la pour la présenter à l'agent.
+            </div>
+        </div>
+
+        <p>
+            Présentez cette fiche (version imprimée ou QR code) lors de votre passage à la frontière
+            le <strong th:text="${#temporals.format(fiche.dateVoyage, 'dd/MM/yyyy')}">01/01/2026</strong>.
+        </p>
+
+        <p style="font-size:13px;color:#888;">
+            Si vous n'avez pas demandé ce document, ignorez cet email.
+        </p>
+    </div>
+    <div class="footer">
+        Direction Générale de la Police Nationale — Direction de la Police des Frontières<br/>
+        Tchad &mdash; &copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span>
+    </div>
+</div>
+</body>
+</html>
