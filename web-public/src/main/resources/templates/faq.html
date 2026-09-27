@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head th:replace="~{fragments/layout :: head('FAQ')}"></head>
+<body class="bg-gray-50 font-sans">
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<main class="max-w-3xl mx-auto px-4 py-12" x-data="{open: null}">
+    <h1 class="text-3xl font-bold text-bleu mb-8">Foire aux Questions</h1>
+
+    <div class="space-y-3">
+        <template x-for="(item, i) in faqs" :key="i">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                <button class="w-full text-left px-6 py-4 font-semibold text-gray-800 flex justify-between items-center"
+                        @click="open = open === i ? null : i">
+                    <span x-text="item.q"></span>
+                    <svg class="w-5 h-5 text-bleu transition-transform" :class="open === i ? 'rotate-180' : ''"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div x-show="open === i" x-collapse class="px-6 pb-4 text-gray-600 text-sm" x-text="item.a"></div>
+            </div>
+        </template>
+    </div>
+</main>
+<div th:replace="~{fragments/layout :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('faqs', () => []);
+});
+</script>
+<script th:inline="javascript">
+document.addEventListener('DOMContentLoaded', () => {
+    window.faqs = [
+        { q: "Qui doit remplir la fiche de voyage ?", a: "Tout voyageur entrant ou sortant par les aéroports du Tchad (N'Djamena, Moundou) doit remplir cette fiche avant son voyage." },
+        { q: "Quand dois-je remplir ma fiche ?", a: "Idéalement 24 à 48 heures avant votre vol. La fiche peut être remplie jusqu'à la veille du voyage." },
+        { q: "Mon QR Code est-il valide pour plusieurs voyages ?", a: "Non. Chaque fiche est liée à une date de voyage spécifique. Vous devez remplir une nouvelle fiche pour chaque voyage." },
+        { q: "Comment modifier ma fiche après soumission ?", a: "Rendez-vous sur la page « Modifier ma fiche » et entrez votre numéro de document, date de délivrance et date de voyage." },
+        { q: "Que faire si je n'ai pas d'accès internet pendant mon voyage ?", a: "Téléchargez la fiche PDF avant de partir. Le QR Code imprimé est accepté à la frontière." },
+        { q: "La fiche est-elle gratuite ?", a: "Oui, le pré-enregistrement en ligne est entièrement gratuit." },
+        { q: "Que se passe-t-il si je fournis de fausses informations ?", a: "Conformément à la Loi n° 007-2015/AN, toute fausse déclaration est passible de sanctions pénales." },
+        { q: "Quels documents de voyage sont acceptés ?", a: "Passeport, Carte Nationale d'Identité (pour les ressortissants CEEAC/CEMAC), et Laissez-passer diplomatique." }
+    ];
+    // Patch Alpine component
+    const el = document.querySelector('[x-data]');
+    if (el && el.__x) { el.__x.$data.faqs = window.faqs; }
+});
+</script>
+</body>
+</html>
