@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head th:replace="~{fragments/layout :: head('Accueil')}"></head>
+<body class="bg-gray-50 font-sans">
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<!-- Héros / Carrousel -->
+<section class="bg-gradient-to-br from-bleu to-bleu-light text-white">
+    <div class="max-w-6xl mx-auto px-4 py-16 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4" th:text="#{home.titre}">
+            Pré-enregistrement de la Fiche de Voyage
+        </h1>
+        <p class="text-xl text-blue-100 max-w-3xl mx-auto mb-8" th:text="#{home.soustitre}">
+            Remplissez votre fiche de renseignement avant votre voyage pour un passage fluide aux frontières du Tchad.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a th:href="@{/P0013}"
+               class="bg-or text-bleu-dark font-bold px-8 py-4 rounded-xl text-lg hover:bg-or-light transition-all shadow-lg"
+               th:text="#{nav.remplir}">
+                Remplir ma fiche maintenant
+            </a>
+            <a th:href="@{/searchFicheInfo}"
+               class="bg-white/20 text-white border-2 border-white/50 font-semibold px-8 py-4 rounded-xl text-lg hover:bg-white/30 transition-all"
+               th:text="#{nav.modifier}">
+                Modifier une fiche existante
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Publicités / slides (si existantes) -->
+<section th:if="${slides != null and !slides.isEmpty()}" class="max-w-6xl mx-auto px-4 py-8">
+    <div class="rounded-xl overflow-hidden shadow-lg">
+        <div th:each="slide, stat : ${slides}" th:if="${stat.first}">
+            <a th:href="${slide.lienCible ?: '#'}" target="_blank">
+                <img th:src="${slide.imageUrl}" th:alt="${slide.titre}"
+                     class="w-full object-cover max-h-64" onerror="this.style.display='none'"/>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- 4 étapes -->
+<section class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-3xl font-bold text-bleu text-center mb-10" th:text="#{home.etapes.titre}">
+        Comment ça marche ?
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-bleu text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
+            <h3 class="font-bold text-bleu text-lg mb-2" th:text="#{home.etape1.titre}">Identité</h3>
+            <p class="text-gray-600 text-sm" th:text="#{home.etape1.desc}">Renseignez vos informations personnelles et votre document de voyage.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-bleu text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
+            <h3 class="font-bold text-bleu text-lg mb-2" th:text="#{home.etape2.titre}">Voyage</h3>
+            <p class="text-gray-600 text-sm" th:text="#{home.etape2.desc}">Indiquez votre provenance, destination, vol et motif de voyage.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-bleu text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
+            <h3 class="font-bold text-bleu text-lg mb-2" th:text="#{home.etape3.titre}">Confirmation</h3>
+            <p class="text-gray-600 text-sm" th:text="#{home.etape3.desc}">Vérifiez le récapitulatif et acceptez l'attestation sur l'honneur.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-or text-bleu-dark rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">4</div>
+            <h3 class="font-bold text-bleu text-lg mb-2" th:text="#{home.etape4.titre}">QR Code</h3>
+            <p class="text-gray-600 text-sm" th:text="#{home.etape4.desc}">Téléchargez ou enregistrez votre fiche avec QR Code à présenter à la frontière.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA bas de page -->
+<section class="bg-or py-10 text-center">
+    <h2 class="text-2xl font-bold text-bleu-dark mb-4" th:text="#{home.cta.titre}">
+        Prêt pour votre voyage ?
+    </h2>
+    <a th:href="@{/P0013}"
+       class="bg-bleu text-white font-bold px-10 py-4 rounded-xl text-lg hover:bg-bleu-light transition-all shadow-lg"
+       th:text="#{nav.remplir}">
+        Remplir ma fiche maintenant
+    </a>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</body>
+</html>

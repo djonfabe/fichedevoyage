@@ -1,0 +1,120 @@
+﻿spring:
+  application:
+    name: fiche-voyage-web-public
+
+  # ── Datasource (dev: H2, prod: PostgreSQL) ─────────────────────────────────
+  datasource:
+    url: jdbc:h2:mem:fichedevoyage;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    out-of-order: false
+
+  # ── Thymeleaf ───────────────────────────────────────────────────────────────
+  thymeleaf:
+    cache: false
+    encoding: UTF-8
+    mode: HTML
+
+  # ── Messages i18n ───────────────────────────────────────────────────────────
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+
+  # ── Mail (désactivé par défaut en dev) ─────────────────────────────────────
+  mail:
+    host: localhost
+    port: 1025
+    username: noreply@fichedevoyage.td
+    password:
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+  # ── Redis (désactivé en dev) ────────────────────────────────────────────────
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  # ── Session ─────────────────────────────────────────────────────────────────
+  session:
+    timeout: 30m
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    whitelabel:
+      enabled: false
+
+app:
+  base-url: http://localhost:8080
+  jwt:
+    secret: dev-secret-key-change-in-production-must-be-at-least-256-bits-long
+    expiration-ms: 900000       # 15 min
+    refresh-expiration-ms: 604800000  # 7 jours
+
+logging:
+  level:
+    td.gov.fichedevoyage: INFO
+    org.springframework.security: WARN
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/fichedevoyage}
+    driver-class-name: org.postgresql.Driver
+    username: ${DATABASE_USER:fichedevoyage}
+    password: ${DATABASE_PASSWORD:changeme}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  h2:
+    console:
+      enabled: false
+
+  thymeleaf:
+    cache: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+app:
+  base-url: ${APP_BASE_URL:https://fichedevoyage.gov.td}

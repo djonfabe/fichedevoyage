@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head th:replace="~{fragments/layout :: head('Modifier ma fiche')}"></head>
+<body class="bg-gray-50 font-sans">
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<main class="max-w-3xl mx-auto px-4 py-12">
+    <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 bg-or rounded-full flex items-center justify-center">
+            <svg class="w-5 h-5 text-bleu-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+            </svg>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold text-bleu">Modifier ma fiche</h1>
+            <p class="text-gray-500 text-sm">Référence : <strong th:text="${fiche.reference}"></strong></p>
+        </div>
+    </div>
+
+    <!-- Récapitulatif en lecture seule -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-6">
+        <div class="bg-bleu text-white px-5 py-3 text-sm font-semibold">Informations actuelles</div>
+        <div class="p-5 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+            <div><span class="text-gray-500">Nom :</span> <span class="font-semibold" th:text="${fiche.nom + ' ' + fiche.prenoms}"></span></div>
+            <div><span class="text-gray-500">Nationalité :</span> <span class="font-semibold" th:text="${fiche.nationaliteNomFr}"></span></div>
+            <div><span class="text-gray-500">Document :</span> <span class="font-semibold" th:text="${fiche.typeDocument + ' — ' + fiche.numeroDocument}"></span></div>
+            <div><span class="text-gray-500">Date du voyage :</span>
+                <span class="font-semibold" th:text="${#temporals.format(fiche.dateVoyage, 'dd/MM/yyyy')}"></span></div>
+            <div><span class="text-gray-500">Statut :</span>
+                <span class="font-semibold text-bleu" th:text="${fiche.statut}"></span></div>
+        </div>
+    </div>
+
+    <div class="bg-amber-50 border border-or rounded-xl p-4 mb-6 text-sm text-amber-800">
+        <strong>⚠️ Attention :</strong> La modification d'une fiche déjà scannée par un agent n'est pas possible.
+        Seules les fiches à statut VALIDÉE peuvent être modifiées.
+    </div>
+
+    <div th:if="${fiche.statut.name() == 'VALIDEE'}">
+        <p class="text-gray-600 mb-4">
+            Pour modifier votre fiche, cliquez ci-dessous pour accéder au formulaire pré-rempli.
+        </p>
+        <a th:href="@{/P0013/modifier/{token}(token=${fiche.qrCodeToken})}"
+           class="inline-flex items-center gap-2 bg-bleu text-white px-6 py-3 rounded-xl font-bold hover:bg-bleu-light transition-all shadow">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+            </svg>
+            Modifier cette fiche
+        </a>
+    </div>
+
+    <div th:unless="${fiche.statut.name() == 'VALIDEE'}" class="text-red-600 font-semibold">
+        Cette fiche ne peut plus être modifiée (statut : <span th:text="${fiche.statut}"></span>).
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
