@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        @page { size: A4 portrait; margin: 15mm 12mm; }
+        body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #1a1a1a; margin: 0; }
+
+        /* ── En-tête ── */
+        .header { display: flex; align-items: center; border-bottom: 3px solid #002664; padding-bottom: 8px; margin-bottom: 10px; }
+        .header-logo { width: 70px; text-align: center; flex-shrink: 0; }
+        .header-logo img { width: 58px; height: 58px; }
+        .header-logo .pays { font-size: 6pt; color: #555; margin-top: 2px; font-weight: bold; letter-spacing: 1px; }
+        .header-title { flex: 1; text-align: center; padding: 0 10px; }
+        .header-title h1 { font-size: 12pt; color: #002664; margin: 0 0 3px 0; font-weight: bold; }
+        .header-title h2 { font-size: 8.5pt; margin: 0; color: #555; }
+        .header-title .loi { font-size: 7pt; color: #999; margin-top: 3px; }
+        .header-ref { flex-shrink: 0; background: #002664; color: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 120px; }
+        .header-ref .ref-label { font-size: 6.5pt; letter-spacing: 1px; opacity: .85; margin-bottom: 3px; }
+        .header-ref .ref-value { font-size: 15pt; font-weight: bold; letter-spacing: 2px; line-height: 1; }
+        .header-ref .ref-date  { font-size: 7pt; margin-top: 4px; opacity: .85; }
+
+        /* ── Sections données ── */
+        .section { margin-bottom: 8px; border: 1px solid #d0d8e4; border-radius: 4px; overflow: hidden; }
+        .section-header { background: #002664; color: white; padding: 4px 8px; font-weight: bold; font-size: 8pt; letter-spacing: .5px; }
+        .section-body { padding: 6px 8px; }
+        .cols { display: flex; gap: 16px; }
+        .cols > div { flex: 1; }
+        .row { display: flex; margin-bottom: 3px; font-size: 8.5pt; }
+        .label { font-weight: bold; color: #444; width: 42%; flex-shrink: 0; }
+        .value { flex: 1; }
+        .sub-title { font-weight: bold; color: #002664; font-size: 7.5pt; margin-bottom: 3px; text-transform: uppercase; }
+
+        /* ── Bandeau QR ── */
+        .qr-band { display: flex; align-items: center; margin-top: 8px; padding: 8px 12px; border: 2px solid #FECB00; border-radius: 6px; background: #fffce8; gap: 12px; }
+        .qr-band img { width: 110px; height: 110px; flex-shrink: 0; }
+        .qr-info { flex: 1; }
+        .qr-info .qr-title { font-weight: bold; color: #002664; font-size: 9pt; margin-bottom: 4px; }
+        .qr-info .qr-ref   { font-family: monospace; font-size: 11pt; font-weight: bold; color: #002664; }
+        .qr-info .qr-url   { font-size: 7pt; color: #777; margin-top: 2px; word-break: break-all; }
+        .qr-info .qr-hint  { font-size: 7.5pt; color: #555; margin-top: 4px; }
+        .stamp-area { width: 75px; height: 75px; border: 2px dashed #bbb; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 6.5pt; text-align: center; flex-shrink: 0; }
+
+        /* ── Encadré modification ── */
+        .modif-box { margin-top: 8px; border: 2px solid #002664; border-radius: 6px; overflow: hidden; }
+        .modif-header { background: #002664; color: white; padding: 5px 10px; font-weight: bold; font-size: 9pt; display: flex; align-items: center; gap: 6px; }
+        .modif-body { padding: 8px 12px; background: #f0f4fb; }
+        .modif-ref-block { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+        .modif-ref-num { background: #002664; color: white; padding: 6px 14px; border-radius: 4px; font-family: monospace; font-size: 14pt; font-weight: bold; letter-spacing: 3px; }
+        .modif-ref-text { font-size: 8pt; color: #444; flex: 1; }
+        .modif-cols { display: flex; gap: 20px; }
+        .modif-cols > div { flex: 1; }
+        .modif-step { font-size: 8pt; margin-bottom: 4px; display: flex; align-items: flex-start; gap: 6px; }
+        .modif-step-num { background: #FECB00; color: #002664; font-weight: bold; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 7.5pt; flex-shrink: 0; margin-top: 0.5px; }
+        .modif-credentials { background: white; border: 1px solid #c8d8f0; border-radius: 4px; padding: 6px 8px; margin-top: 6px; }
+        .modif-credentials .cred-row { display: flex; font-size: 7.5pt; margin-bottom: 2px; }
+        .modif-credentials .cred-label { color: #666; width: 140px; flex-shrink: 0; }
+        .modif-credentials .cred-value { font-weight: bold; color: #002664; font-family: monospace; }
+        .modif-url { font-size: 8pt; font-weight: bold; color: #002664; text-decoration: underline; }
+
+        /* ── Légal + footer ── */
+        .legal { margin-top: 8px; background: #fffce8; border: 1px solid #FECB00; border-radius: 4px; padding: 5px 8px; font-size: 7pt; font-style: italic; color: #555; }
+        .footer { margin-top: 8px; border-top: 1.5px solid #002664; padding-top: 6px; text-align: center; font-size: 6.5pt; color: #777; }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════ EN-TÊTE ══════════════════ -->
+<div class="header">
+    <div class="header-logo">
+        <img th:src="${logoBase64}" alt="Armoiries TD"/>
+        <div class="pays">TCHAD</div>
+    </div>
+    <div class="header-title">
+        <h1>FICHE DE RENSEIGNEMENT DE POLICE AUX FRONTIÈRES</h1>
+        <h2>Ministère de la Sécurité Publique et de l'Immigration</h2>
+        <h2>Direction Générale de la Police Nationale — Direction de la Police des Frontières</h2>
+        <div class="loi">Loi n° 007-2015/AN du 21 avril 2015 relative aux conditions d'entrée et de séjour des étrangers au Tchad</div>
+    </div>
+    <div class="header-ref">
+        <div class="ref-label">RÉFÉRENCE</div>
+        <div class="ref-value" th:text="${fiche.reference}">FV-2026-000001</div>
+        <div class="ref-date" th:text="${#temporals.format(fiche.dateVoyage, 'dd/MM/yyyy')}">01/06/2026</div>
+    </div>
+</div>
+
+<!-- ══════════════════ 1. IDENTITÉ ══════════════════ -->
+<div class="section">
+    <div class="section-header">1. IDENTITÉ DU VOYAGEUR</div>
+    <div class="section-body">
+        <div class="cols">
+            <div>
+                <div class="row"><span class="label">Nom :</span><span class="value" th:text="${fiche.nom}"></span></div>
+                <div class="row"><span class="label">Prénoms :</span><span class="value" th:text="${fiche.prenoms}"></span></div>
+                <div class="row" th:if="${fiche.nomJeuneFille != null}"><span class="label">Nom de jeune fille :</span><span class="value" th:text="${fiche.nomJeuneFille}"></span></div>
+                <div class="row"><span class="label">Sexe :</span><span class="value" th:text="${fiche.sexe}"></span></div>
+                <div class="row"><span class="label">Date de naissance :</span><span class="value" th:text="${#temporals.format(fiche.dateNaissance, 'dd/MM/yyyy')}"></span></div>
+                <div class="row"><span class="label">Lieu de naissance :</span><span class="value" th:text="${fiche.lieuNaissance}"></span></div>
+            </div>
+            <div>
+                <div class="row"><span class="label">Nationalité :</span><span class="value" th:text="${fiche.nationaliteNomFr}"></span></div>
+                <div class="row"><span class="label">Pays de résidence :</span><span class="value" th:text="${fiche.paysResidenceNomFr}"></span></div>
+                <div class="row"><span class="label">Profession :</span><span class="value" th:text="${fiche.profession}"></span></div>
+                <div class="row" th:if="${fiche.fonction != null}"><span class="label">Fonction :</span><span class="value" th:text="${fiche.fonction}"></span></div>
+                <div class="row" th:if="${fiche.email != null}"><span class="label">Email :</span><span class="value" th:text="${fiche.email}"></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ 2. DOCUMENT ══════════════════ -->
+<div class="section">
+    <div class="section-header">2. DOCUMENT DE VOYAGE</div>
+    <div class="section-body">
+        <div class="cols">
+            <div>
+                <div class="row"><span class="label">Type de document :</span><span class="value" th:text="${fiche.typeDocument}"></span></div>
+                <div class="row"><span class="label">Numéro :</span><span class="value" th:text="${fiche.numeroDocument}"></span></div>
+            </div>
+            <div>
+                <div class="row"><span class="label">Date de délivrance :</span><span class="value" th:text="${#temporals.format(fiche.dateDelivrance, 'dd/MM/yyyy')}"></span></div>
+                <div class="row"><span class="label">Lieu de délivrance :</span><span class="value" th:text="${fiche.lieuDelivrance}"></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ 3. VOYAGE ══════════════════ -->
+<div class="section">
+    <div class="section-header">3. INFORMATIONS DE VOYAGE</div>
+    <div class="section-body">
+        <div class="cols">
+            <div>
+                <div class="sub-title">Provenance</div>
+                <div class="row" th:if="${fiche.paysProvenanceNomFr != null}"><span class="label">Pays :</span><span class="value" th:text="${fiche.paysProvenanceNomFr}"></span></div>
+                <div class="row" th:if="${fiche.villeProvenance != null}"><span class="label">Ville :</span><span class="value" th:text="${fiche.villeProvenance}"></span></div>
+            </div>
+            <div>
+                <div class="sub-title">Destination</div>
+                <div class="row" th:if="${fiche.paysDestinationNomFr != null}"><span class="label">Pays :</span><span class="value" th:text="${fiche.paysDestinationNomFr}"></span></div>
+                <div class="row" th:if="${fiche.villeDestination != null}"><span class="label">Ville :</span><span class="value" th:text="${fiche.villeDestination}"></span></div>
+            </div>
+        </div>
+        <div class="cols" style="margin-top:5px;">
+            <div>
+                <div class="row"><span class="label">Date de voyage :</span><span class="value" th:text="${#temporals.format(fiche.dateVoyage, 'dd/MM/yyyy')}"></span></div>
+                <div class="row" th:if="${fiche.typeVoyage != null}"><span class="label">Type :</span><span class="value" th:text="${fiche.typeVoyage}"></span></div>
+                <div class="row" th:if="${fiche.motifVoyage != null}"><span class="label">Motif :</span><span class="value" th:text="${fiche.motifVoyage}"></span></div>
+            </div>
+            <div>
+                <div class="row" th:if="${fiche.dureeSejour != null}"><span class="label">Durée du séjour :</span><span class="value" th:text="${fiche.dureeSejour + ' jour(s)'}"></span></div>
+                <div class="row" th:if="${fiche.compagnieNom != null}"><span class="label">Compagnie aérienne :</span><span class="value" th:text="${fiche.compagnieNom}"></span></div>
+                <div class="row" th:if="${fiche.numeroVol != null}"><span class="label">N° de vol :</span><span class="value" th:text="${fiche.numeroVol}"></span></div>
+                <div class="row" th:if="${fiche.typeHebergement != null}"><span class="label">Hébergement :</span><span class="value" th:text="${fiche.typeHebergement}"></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ QR CODE ══════════════════ -->
+<div class="qr-band">
+    <img th:src="'data:image/png;base64,' + ${qrBase64}" alt="QR Code de vérification"/>
+    <div class="qr-info">
+        <div class="qr-title">QR CODE DE VÉRIFICATION — À PRÉSENTER À LA FRONTIÈRE</div>
+        <div class="qr-ref" th:text="${fiche.reference}"></div>
+        <div class="qr-url" th:text="${baseUrl + '/v/' + fiche.qrCodeToken}"></div>
+        <div class="qr-hint">Scannez ce code pour vérifier l'authenticité de la fiche en ligne.</div>
+    </div>
+    <div class="stamp-area">TAMPON<br/>FRONTIÈRE</div>
+</div>
+
+<!-- ══════════════════ GUIDE MODIFICATION ══════════════════ -->
+<div class="modif-box">
+    <div class="modif-header">
+        &#9998; COMMENT MODIFIER CETTE FICHE — CONSERVEZ CES INFORMATIONS
+    </div>
+    <div class="modif-body">
+        <div class="modif-ref-block">
+            <div>
+                <div style="font-size:7pt; color:#555; margin-bottom:3px; font-weight:bold;">VOTRE RÉFÉRENCE UNIQUE</div>
+                <div class="modif-ref-num" th:text="${fiche.reference}">FV-2026-000001</div>
+            </div>
+            <div class="modif-ref-text">
+                Cette référence identifie votre fiche de voyage de façon unique. Conservez ce document pour tout besoin de modification ou de vérification avant votre passage à la frontière.
+            </div>
+        </div>
+        <div class="modif-cols">
+            <div>
+                <div style="font-size:8pt; font-weight:bold; color:#002664; margin-bottom:5px;">POUR MODIFIER VOTRE FICHE :</div>
+                <div class="modif-step">
+                    <div class="modif-step-num">1</div>
+                    <div>Rendez-vous sur le site : <span class="modif-url" th:text="${baseUrl + '/searchFicheInfo'}"></span></div>
+                </div>
+                <div class="modif-step">
+                    <div class="modif-step-num">2</div>
+                    <div>Cliquez sur <strong>« Modifier ma fiche »</strong></div>
+                </div>
+                <div class="modif-step">
+                    <div class="modif-step-num">3</div>
+                    <div>Saisissez vos identifiants ci-contre, puis validez</div>
+                </div>
+                <div class="modif-step">
+                    <div class="modif-step-num">4</div>
+                    <div>Téléchargez le nouveau PDF après modification</div>
+                </div>
+            </div>
+            <div>
+                <div style="font-size:8pt; font-weight:bold; color:#002664; margin-bottom:5px;">VOS IDENTIFIANTS DE RECHERCHE :</div>
+                <div class="modif-credentials">
+                    <div class="cred-row">
+                        <span class="cred-label">N° de document :</span>
+                        <span class="cred-value" th:text="${fiche.numeroDocument}"></span>
+                    </div>
+                    <div class="cred-row">
+                        <span class="cred-label">Date de délivrance :</span>
+                        <span class="cred-value" th:text="${#temporals.format(fiche.dateDelivrance, 'dd/MM/yyyy')}"></span>
+                    </div>
+                    <div class="cred-row">
+                        <span class="cred-label">Date de voyage :</span>
+                        <span class="cred-value" th:text="${#temporals.format(fiche.dateVoyage, 'dd/MM/yyyy')}"></span>
+                    </div>
+                </div>
+                <div style="font-size:6.5pt; color:#888; margin-top:4px; font-style:italic;">
+                    Ces identifiants sont requis pour retrouver et modifier votre fiche.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ MENTION LÉGALE ══════════════════ -->
+<div class="legal">
+    Je soussigné(e) certifie sur l'honneur l'exactitude des renseignements fournis ci-dessus.
+    Toute fausse déclaration est passible de poursuites conformément à la Loi n° 007-2015/AN du 21 avril 2015
+    et aux dispositions du Code Pénal en vigueur au Tchad.
+</div>
+
+<!-- ══════════════════ PIED DE PAGE ══════════════════ -->
+<div class="footer">
+    <div>
+        Fiche générée le <span th:text="${#temporals.format(fiche.createdAt, 'dd/MM/yyyy à HH:mm')}"></span>
+        &nbsp;|&nbsp; Référence : <strong th:text="${fiche.reference}"></strong>
+        &nbsp;|&nbsp; Vérification en ligne : <span th:text="${baseUrl + '/v/' + fiche.qrCodeToken}"></span>
+    </div>
+    <div style="margin-top:2px;">
+        Direction Générale de la Police Nationale — Direction de la Police des Frontières — République du Tchad
+    </div>
+</div>
+
+</body>
+</html>

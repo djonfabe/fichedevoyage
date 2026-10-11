@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="${title} + ' — Fiche de Voyage TD'">Fiche de Voyage TD</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/armoirie.svg}"/>
+    <!-- Tailwind CSS CDN (prod: compiled) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bleu:  { DEFAULT: '#002664', light: '#1a4a8a', dark: '#001440', 100: '#dbeafe', 200: '#93b8e0', 800: '#1e3a6e', 900: '#0d1f3c' },
+                        or:    { DEFAULT: '#FECB00', light: '#FFD740', dark: '#C9A200' },
+                        rouge: { DEFAULT: '#C10000', light: '#e53935', dark: '#8b0000' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .step-active  { @apply bg-bleu text-white; }
+        .step-done    { @apply bg-or text-bleu-dark; }
+        .step-pending { @apply bg-gray-200 text-gray-500; }
+    </style>
+</head>
+
+<nav th:fragment="navbar">
+    <header class="bg-bleu text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a th:href="@{/}" class="flex items-center gap-3">
+                <img th:src="@{/img/armoirie.svg}" alt="Armoiries TD" class="h-12 w-auto"/>
+                <div>
+                    <p class="font-bold text-lg leading-tight">Fiche de Voyage</p>
+                    <p class="text-xs text-bleu-200">Tchad — Police des Frontières</p>
+                </div>
+            </a>
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                <a th:href="@{/}" class="hover:text-or transition-colors" th:text="#{nav.accueil}">Accueil</a>
+                <a th:href="@{/P0013}" class="bg-or text-bleu-dark px-4 py-2 rounded-lg hover:bg-or-light transition-colors font-semibold" th:text="#{nav.remplir}">Remplir la fiche</a>
+                <a th:href="@{/searchFicheInfo}" class="hover:text-or transition-colors" th:text="#{nav.modifier}">Modifier ma fiche</a>
+                <a th:href="@{/faq}" class="hover:text-or transition-colors">FAQ</a>
+                <a th:href="@{/contact}" class="hover:text-or transition-colors" th:text="#{nav.contact}">Contact</a>
+                <!-- Langue -->
+                <div class="flex gap-1">
+                    <a th:href="@{/?lang=fr}" class="px-2 py-1 text-xs rounded border border-bleu-200 hover:bg-bleu-800">FR</a>
+                    <a th:href="@{/?lang=en}" class="px-2 py-1 text-xs rounded border border-bleu-200 hover:bg-bleu-800">EN</a>
+                </div>
+            </nav>
+            <!-- Mobile menu button -->
+            <button class="md:hidden" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-bleu-900 px-4 py-3 space-y-2 text-sm">
+            <a th:href="@{/}" class="block hover:text-or" th:text="#{nav.accueil}">Accueil</a>
+            <a th:href="@{/P0013}" class="block text-or font-semibold" th:text="#{nav.remplir}">Remplir la fiche</a>
+            <a th:href="@{/searchFicheInfo}" class="block hover:text-or" th:text="#{nav.modifier}">Modifier ma fiche</a>
+            <a th:href="@{/faq}" class="block hover:text-or">FAQ</a>
+            <a th:href="@{/contact}" class="block hover:text-or" th:text="#{nav.contact}">Contact</a>
+        </div>
+    </header>
+</nav>
+
+<footer th:fragment="footer">
+    <footer class="bg-gray-800 text-gray-300 mt-16">
+        <div class="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+            <div>
+                <h3 class="font-bold text-white mb-2">Fiche de Voyage TD</h3>
+                <p>Plateforme officielle de pré-enregistrement des fiches de renseignement de police aux frontières du Tchad.</p>
+            </div>
+            <div>
+                <h3 class="font-bold text-white mb-2">Liens utiles</h3>
+                <ul class="space-y-1">
+                    <li><a th:href="@{/P0013}" class="hover:text-white" th:text="#{nav.remplir}">Remplir ma fiche</a></li>
+                    <li><a th:href="@{/searchFicheInfo}" class="hover:text-white" th:text="#{nav.modifier}">Modifier ma fiche</a></li>
+                    <li><a th:href="@{/faq}" class="hover:text-white">FAQ</a></li>
+                    <li><a th:href="@{/contact}" class="hover:text-white" th:text="#{nav.contact}">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-bold text-white mb-2">Cadre légal</h3>
+                <p class="text-xs">Loi n° 007-2015/AN du 21 avril 2015 relative aux conditions d'entrée et de séjour des étrangers.</p>
+                <p class="mt-2 text-xs">Direction Générale de la Police Nationale — Direction de la Police des Frontières</p>
+            </div>
+        </div>
+        <div class="border-t border-gray-700 text-center py-4 text-xs text-gray-500">
+            &copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> République du Tchad — Tous droits réservés
+        </div>
+    </footer>
+</footer>
+</html>
