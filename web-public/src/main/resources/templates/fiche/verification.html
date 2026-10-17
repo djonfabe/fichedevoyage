@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head th:replace="~{fragments/layout :: head('Vérification fiche')}"></head>
+<body class="bg-gray-50 font-sans">
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<main class="max-w-3xl mx-auto px-4 py-12">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-bleu" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold text-bleu">Fiche vérifiée</h1>
+            <p class="text-gray-500 text-sm">Vérification via QR Code — <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span></p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-bleu text-white px-6 py-4 flex justify-between items-center">
+            <div>
+                <p class="text-xs text-bleu-200">Référence</p>
+                <p class="text-xl font-bold tracking-wide" th:text="${fiche.reference}"></p>
+            </div>
+            <span class="text-sm font-bold px-3 py-1 rounded-full"
+                  th:classappend="${fiche.statut.name() == 'SCANNEE'} ? 'bg-blue-400 text-white' : 'bg-or text-bleu-dark'"
+                  th:text="${fiche.statut}">
+            </span>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+            <div class="space-y-2">
+                <h3 class="font-bold text-bleu border-b pb-1">Identité</h3>
+                <div class="flex justify-between"><span class="text-gray-500">Nom complet</span><span class="font-semibold" th:text="${fiche.nom + ' ' + fiche.prenoms}"></span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Sexe</span><span class="font-semibold" th:text="${fiche.sexe}"></span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Date de naissance</span><span class="font-semibold" th:text="${#temporals.format(fiche.dateNaissance, 'dd/MM/yyyy')}"></span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Nationalité</span><span class="font-semibold" th:text="${fiche.nationaliteNomFr}"></span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Profession</span><span class="font-semibold" th:text="${fiche.profession}"></span></div>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="font-bold text-bleu border-b pb-1">Document</h3>
+                <div class="flex justify-between"><span class="text-gray-500">Type</span><span class="font-semibold" th:text="${fiche.typeDocument}"></span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Numéro</span><span class="font-semibold" th:text="${fiche.numeroDocument}"></span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Délivré le</span><span class="font-semibold" th:text="${#temporals.format(fiche.dateDelivrance, 'dd/MM/yyyy')}"></span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Lieu</span><span class="font-semibold" th:text="${fiche.lieuDelivrance}"></span></div>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="font-bold text-bleu border-b pb-1">Voyage</h3>
+                <div class="flex justify-between"><span class="text-gray-500">Date</span><span class="font-semibold" th:text="${#temporals.format(fiche.dateVoyage, 'dd/MM/yyyy')}"></span></div>
+                <div class="flex justify-between" th:if="${fiche.typeVoyage != null}"><span class="text-gray-500">Type</span><span class="font-semibold" th:text="${fiche.typeVoyage}"></span></div>
+                <div class="flex justify-between" th:if="${fiche.motifVoyage != null}"><span class="text-gray-500">Motif</span><span class="font-semibold" th:text="${fiche.motifVoyage}"></span></div>
+                <div class="flex justify-between" th:if="${fiche.compagnieNom != null}"><span class="text-gray-500">Compagnie</span><span class="font-semibold" th:text="${fiche.compagnieNom + (fiche.numeroVol != null ? ' ' + fiche.numeroVol : '')}"></span></div>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="font-bold text-bleu border-b pb-1">Provenance / Destination</h3>
+                <div class="flex justify-between" th:if="${fiche.paysProvenanceNomFr != null}"><span class="text-gray-500">De</span><span class="font-semibold" th:text="${fiche.paysProvenanceNomFr + (fiche.villeProvenance != null ? ' / ' + fiche.villeProvenance : '')}"></span></div>
+                <div class="flex justify-between" th:if="${fiche.paysDestinationNomFr != null}"><span class="text-gray-500">Vers</span><span class="font-semibold" th:text="${fiche.paysDestinationNomFr + (fiche.villeDestination != null ? ' / ' + fiche.villeDestination : '')}"></span></div>
+                <div class="flex justify-between" th:if="${fiche.dureeSejour != null}"><span class="text-gray-500">Durée</span><span class="font-semibold" th:text="${fiche.dureeSejour + ' jour(s)'}"></span></div>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 px-6 py-3 text-xs text-gray-400 border-t text-center">
+            Fiche enregistrée le <span th:text="${#temporals.format(fiche.createdAt, 'dd/MM/yyyy à HH:mm')}"></span>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
